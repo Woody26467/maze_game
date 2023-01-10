@@ -1,10 +1,12 @@
-// Pull off some properties from the Matter library
+// Destructure some properties from the Matter library
 
 const { Engine, Render, Runner, World, Bodies } = Matter
 
 const cells = 3
 const width = 600
 const height = 600
+
+const unitLength = width / cells
 
 const engine = Engine.create()
 const { world } = engine
@@ -20,6 +22,7 @@ const render = Render.create({
 Render.run(render)
 Runner.run(Runner.create(), engine)
 
+// Create the boundary walls
 // Walls - originx, originy, width, height, options
 const walls = [
   Bodies.rectangle(width / 2, 0, width, 40, { isStatic: true }),
@@ -76,22 +79,89 @@ const stepThroughCell = (row, column) => {
   }
   // Mark this cell as being visited
   grid[row][column] = true
-  // Assemble randomly ordered list of neighbours
-  const neighbours = shuffle([
-    [row - 1, column],
-    [row, column + 1],
-    [row + 1, column],
-    [row, column - 1],
+  // Assemble randomly ordered list of neighbors
+  const neighbors = shuffle([
+    [row - 1, column, 'up'],
+    [row, column + 1, 'right'],
+    [row + 1, column, 'down'],
+    [row, column - 1, 'left'],
   ])
-  // For each neighbour ......
+  // For each neighbor ......
+  for (let neighbor of neighbors) {
+    const [nextRow, nextColumn, direction] = neighbor
+    // See if that neighbor is out of bounds
+    if (
+      nextRow < 0 ||
+      nextRow >= cells ||
+      nextColumn < 0 ||
+      nextColumn >= cells
+    ) {
+      continue
+    }
+    // Check If we have visited that neighbour, continue to next neighbor
+    if (grid[nextRow][nextColumn]) {
+      continue
+    }
+    // Remove a wall from either horizontals or verticals
+    if (direction === 'left') {
+      verticals[row][column - 1] = true
+    } else if (direction === 'right') {
+      verticals[row][column] = true
+    } else if (direction === 'up') {
+      horizontals[row - 1][column] = true
+    } else if (direction === 'down') {
+      horizontals[row][column] = true
+    }
 
-  // See if that neighbour is out of bounds
-
-  // Check If we have visited that neighbour, continue to next neighbour
-
-  // Remove a wall from either horizontals or verticals
-
+    stepThroughCell(nextRow, nextColumn)
+  }
   // Visit that next cell
 }
+stepThroughCell(startRow, startColumn)
 
-stepThroughCell(1, 1)
+horizontals.forEach((row, rowIndex) => {
+  row.forEach((open, columnIndex) => {
+    if (open) {
+      return
+    }
+
+    const wall = Bodies.rectangle(
+      columnIndex * unitLength + unitLength / 2,
+      rowIndex * unitLength + unitLength,
+      unitLength,
+      10,
+      {
+        isStatic: true,
+      }
+    )
+    console.log(
+      columnIndex * unitLength + unitLength / 2,
+      rowIndex * unitLength + unitLength
+    )
+
+    World.add(world, wall)
+  })
+})
+
+verticals.forEach((row, rowIndex) => {
+  row.forEach((open, columnIndex) => {
+    if (open) {
+      return
+    }
+
+    const vWall = Bodies.rectangle(
+      columnIndex * unitLength + unitLength,
+      rowIndex * unitLength + unitLength / 2,
+      10,
+      unitLength,
+      {
+        isStatic: true,
+      }
+    )
+    console.log(
+      columnIndex * unitLength + unitLength,
+      rowIndex * unitLength + unitLength / 2
+    )
+    World.add(world, vWall)
+  })
+})
