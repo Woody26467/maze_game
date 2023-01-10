@@ -1,14 +1,15 @@
 // Destructure some properties from the Matter library
 
-const { Engine, Render, Runner, World, Bodies } = Matter
+const { Engine, Render, Runner, World, Bodies, Body } = Matter
 
-const cells = 3
+const cells = 15
 const width = 600
 const height = 600
 
 const unitLength = width / cells
 
 const engine = Engine.create()
+engine.world.gravity.y = 0.1
 const { world } = engine
 const render = Render.create({
   element: document.body,
@@ -179,19 +180,22 @@ const ball = Bodies.circle(
 World.add(world, ball)
 
 document.addEventListener('keydown', (event) => {
+  const { x, y } = ball.velocity
+  const speedLimit = 5
+
   if (event.code === 'KeyW') {
-    console.log('Move ball up')
+    Body.setVelocity(ball, { x, y: Math.max(y - 5, -speedLimit) })
   }
 
   if (event.code === 'KeyD') {
-    console.log('Move ball right')
+    Body.setVelocity(ball, { x: Math.min(x + 5, speedLimit), y })
   }
 
   if (event.code === 'KeyS') {
-    console.log('Move ball down')
+    Body.setVelocity(ball, { x, y: Math.min(y + 5, speedLimit) })
   }
 
   if (event.code === 'KeyA') {
-    console.log('Move ball left')
+    Body.setVelocity(ball, { x: Math.max(x - 5, -speedLimit), y })
   }
 })
