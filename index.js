@@ -158,6 +158,7 @@ verticals.forEach((row, rowIndex) => {
   })
 })
 
+// Create the goal
 const goal = Bodies.rectangle(
   width - unitLength / 2,
   height - unitLength / 2,
@@ -168,3 +169,11 @@ const goal = Bodies.rectangle(
   }
 )
 World.add(world, goal)
+
+// Create the ball
+const ball = Bodies.circle(
+  unitLength / 2,
+  unitLength / 2,
+  unitLength / 4
+)
+World.add(world, ball)
